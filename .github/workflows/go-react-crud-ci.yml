@@ -15,7 +15,10 @@ jobs:
     
       - name: Start Go React CRUD Application
         run: docker compose up -d
-  
+      
+      - name: Wait for application to up
+        run: sleep 10
+
       - name: Check containers
         run: docker compose ps 
       
