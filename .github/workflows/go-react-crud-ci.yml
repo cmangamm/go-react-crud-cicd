@@ -14,7 +14,7 @@ jobs:
         run: docker compose build
     
       - name: Start Go React CRUD Application
-        run: docker compose up -d
+        run: docker compose up --build -d
       
       - name: Wait for application to up
         run: sleep 10
