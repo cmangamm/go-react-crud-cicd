@@ -26,7 +26,8 @@ jobs:
         run: curl --fail http://localhost:3000/api/users
 
       - name: Test CREATE user
-        run: curl --fail -X POST http://localhost:3000/api/users -H "Content-Type: application/json" -d '{"name":"CI Test User"}'
+        run: | 
+          curl --fail -X POST http://localhost:3000/api/users -H "Content-Type: application/json" -d '{"name":"CI Test User"}'
 
       - name: Test DELETE user
         run: curl --fail -X DELETE http://localhost:3000/api/users/1
