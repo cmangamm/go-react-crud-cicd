@@ -9,15 +9,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Build docker images for frontend, backend and postgres
-        run: docker compose build
-    
-      - name: Start Go React CRUD Application
+        
+      - name: Build docker images for frontend, backend and postgres & Start Go React CRUD Application
         run: docker compose up --build -d
-      
-      - name: Wait for application to up
-        run: sleep 10
 
       - name: Check containers
         run: docker compose ps 
