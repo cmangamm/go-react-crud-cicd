@@ -1,0 +1,17 @@
+name: Go React CRUD CI Pipeline
+on:
+  push:
+    branches:
+      - main
+jobs:
+  docker-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Build backend
+        run: docker build -t go-react-crud-backend ./backend
+    
+      - name: Build frontend
+        run: docker build -t go-react-crud-frontend ./frontend
