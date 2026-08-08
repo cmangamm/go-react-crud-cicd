@@ -9,9 +9,18 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
-      - name: Build backend
-        run: docker build -t go-react-crud-backend ./backend
+
+      - name: Build docker images for frontend, backend and postgres
+        run: docker compose build
     
-      - name: Build frontend
-        run: docker build -t go-react-crud-frontend ./frontend
+      - name: Start Go React CRUD Application
+        run: docker compose up -d
+  
+      - name: Check containers
+        run: docker compose ps 
+      
+      - name: Test frontend
+        run: curl --fail http://localhost:3000/api/users
+
+      - name: Test backend
+        run: curl --fail http://localhost:8000
