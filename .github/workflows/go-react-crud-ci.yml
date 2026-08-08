@@ -12,9 +12,6 @@ jobs:
         
       - name: Build docker images for frontend, backend and postgres & Start Go React CRUD Application
         run: docker compose up --build -d
-      
-      - name: Wait for application to up
-        run: sleep 20
         
       - name: Check containers
         run: docker compose ps 
@@ -27,6 +24,9 @@ jobs:
         
       - name: Test frontend
         run: curl --fail http://localhost:3000
-
+        
+      - name: Test frontend proxy
+        run: curl --fail http://localhost:3000/api/users
+        
       - name: Test backend
-        run: curl --fail http://localhost:8000
+        run: curl --fail http://localhost:8000/users
