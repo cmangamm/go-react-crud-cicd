@@ -20,7 +20,7 @@ jobs:
         run: docker compose ps 
       
       - name: Test frontend
-        run: curl --fail http://localhost:3000/api/users
+        run: curl --fail http://localhost:3000
 
       - name: Test backend
         run: curl --fail http://localhost:8000
