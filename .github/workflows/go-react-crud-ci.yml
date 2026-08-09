@@ -17,6 +17,17 @@ jobs:
         
       - name: Build docker images for frontend, backend and postgres & Start Go React CRUD Application
         run: docker compose up --build -d
+      
+      - name: Install Trivy
+        run: |
+          sudo apt-get update
+          sudo apt-get install trivy -y
+          
+      - name: Scan frontend image
+        run: trivy image --severity HIGH, CRITICAL --exit-code 1 go-react-crud-cicd-frontend
+
+      - name: Scan backend image
+        run: trivy image --severity HIGH, CRITICAL --exit-code 1 go-react-crud-cicd-backend
         
       - name: Check containers
         run: docker compose ps 
