@@ -15,10 +15,21 @@ spec:
       containers:
       - name: postgres
         image: postgres:16 
-        envFrom:
-          configMapRef:
-            - name: app-config
-          secretRef:
-            - name: app-secret
+        env:
+        - name: POSTGRES_DB
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: POSTGRES_DB
+        - name: POSTGRES_USER
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: POSTGRES_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: app-secret
+              key: POSTGRES_PASSWORD
         ports:
         - containerPort: 5432
