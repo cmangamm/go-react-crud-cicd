@@ -3,8 +3,6 @@ kind: ConfigMap
 metadata:
   name: app-config
 data:
-  DB_HOST: db
-  DB_USER: postgres
-  DB_NAME: appdb
-  DB_PORT: "5432"
+  POSTGRES_DB: appdb
+  POSTGRES_USER: postgres
   DATABASE_URL: postgres://postgres:postgres@db:5432/appdb?sslmode=disable
