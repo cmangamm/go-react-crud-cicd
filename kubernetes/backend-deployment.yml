@@ -17,6 +17,9 @@ spec:
         image: cmangamm/go-react-crud-cicd-backend:latest
         ports:
         - containerPort: 8000
-        envFrom:
-          - configMapRef:
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            configMapKeyRef:
               name: app-config
+              key: DATABASE_URL
