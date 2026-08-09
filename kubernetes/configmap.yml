@@ -7,3 +7,4 @@ data:
   DB_USER: postgres
   DB_NAME: appdb
   DB_PORT: "5432"
+  DATABASE_URL: postgres://postgres:postgres@db:5432/appdb?sslmode=disable
