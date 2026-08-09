@@ -13,7 +13,7 @@ jobs:
       - name: Go Lint
         uses: golangci/golangci-lint-action@v8
         with:
-          working_directory: backend
+          working-directory: backend
         
       - name: Build docker images for frontend, backend and postgres & Start Go React CRUD Application
         run: docker compose up --build -d
