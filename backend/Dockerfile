@@ -19,8 +19,6 @@ RUN go build -o goapp .
 # ============= Runtime Stage ============
 FROM debian:bookworm-slim
 
-RUN apt-get update  && apt-get upgrade -y && rm -rf /var//lib/apt/list/*
-
 # Set working directory
 WORKDIR /app
 
