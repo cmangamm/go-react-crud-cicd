@@ -59,14 +59,14 @@ func main() {
 
 	router.HandleFunc("/users", getUsers(db)).Methods("GET")
 	// Health endpoint
-	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+	router.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
     	w.WriteHeader(http.StatusOK)
 		if _, err := w.Write([]byte("OK")); err != nil{
 			log.Println("failed to write health response:", err)
 		}
 	})
 	// Ready endpoint
-	http.HandleFunc("/ready", func(w http.ResponseWriter, r *http.Request) {
+	router.HandleFunc("/ready", func(w http.ResponseWriter, r *http.Request) {
     	w.WriteHeader(http.StatusOK)
 		if _, err := w.Write([]byte("READY")); err != nil{
 			log.Println("failed to write ready response:", err)
