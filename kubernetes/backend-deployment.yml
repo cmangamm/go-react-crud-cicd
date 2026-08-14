@@ -35,3 +35,10 @@ spec:
             path: /healthy
           initialDelaySeconds: 5
           periodSeconds: 5
+        resources:
+          Requests:
+            cpu: "100m"
+            memory: "128Mi"
+          Limits:
+            cpu: "500m"
+            memory: "256Mi"
