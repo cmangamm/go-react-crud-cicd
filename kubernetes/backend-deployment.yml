@@ -29,3 +29,9 @@ spec:
             path: /ready
           initialDelaySeconds: 5
           periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            port: 8000
+            path: /healthy
+          initialDelaySeconds: 5
+          periodSeconds: 5
