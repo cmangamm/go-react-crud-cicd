@@ -23,3 +23,9 @@ spec:
             configMapKeyRef:
               name: app-config
               key: DATABASE_URL
+        readinessProbe:
+          httpGet:
+            port: 8000
+            path: /ready
+          initialDelaySeconds: 5
+          periodSeconds: 5
