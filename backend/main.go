@@ -58,6 +58,17 @@ func main() {
 	})
 
 	router.HandleFunc("/users", getUsers(db)).Methods("GET")
+	// Health endpoint
+	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+    	w.WriteHeader(http.StatusOK)
+    	w.Write([]byte("OK"))
+	})
+
+	// Ready endpoint
+	http.HandleFunc("/ready", func(w http.ResponseWriter, r *http.Request) {
+    	w.WriteHeader(http.StatusOK)
+    	w.Write([]byte("READY"))
+	})
 	router.HandleFunc("/users/{id}", getUser(db)).Methods("GET")
 	router.HandleFunc("/users", createUser(db)).Methods("POST")
 	router.HandleFunc("/users/{id}", updateUser(db)).Methods("PUT")
