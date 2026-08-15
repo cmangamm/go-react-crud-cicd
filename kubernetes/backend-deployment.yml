@@ -32,13 +32,13 @@ spec:
         livenessProbe:
           httpGet:
             port: 8000
-            path: /healthy
+            path: /health
           initialDelaySeconds: 5
           periodSeconds: 5
         resources:
-          Requests:
+          requests:
             cpu: "100m"
             memory: "128Mi"
-          Limits:
+          limits:
             cpu: "500m"
             memory: "256Mi"
