@@ -3,7 +3,12 @@ kind: Deployment
 metadata:
   name: backend
 spec:
-  replicas: 1
+  replicas: 4
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
   selector:
     matchLabels:
       app: backend
@@ -29,12 +34,12 @@ spec:
             path: /ready
           initialDelaySeconds: 5
           periodSeconds: 5
-        livenessProbe:
-          httpGet:
-            port: 8000
-            path: /health
-          initialDelaySeconds: 5
-          periodSeconds: 5
+        #livenessProbe:
+        #  httpGet:
+        #    port: 8000
+        #    path: /health
+        #  initialDelaySeconds: 5
+        #  periodSeconds: 5
         resources:
           requests:
             cpu: "100m"
