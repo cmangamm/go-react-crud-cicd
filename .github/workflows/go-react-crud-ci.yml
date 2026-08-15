@@ -60,9 +60,9 @@ jobs:
       - name: Tag docker frontend and backend images
         run: |
           docker tag go-react-crud-cicd-frontend ${{secrets.DOCKERHUB_USERNAME}}/go-react-crud-cicd-frontend:latest
-          docker tag go-react-crud-cicd-backend ${{secrets.DOCKERHUB_USERNAME}}/go-react-crud-cicd-backend:latest
+          docker tag go-react-crud-cicd-backend ${{secrets.DOCKERHUB_USERNAME}}/go-react-crud-cicd-backend:v2
           
       - name: Push docker frontend and backend images
         run: |
           docker push ${{secrets.DOCKERHUB_USERNAME}}/go-react-crud-cicd-frontend:latest
-          docker push ${{secrets.DOCKERHUB_USERNAME}}/go-react-crud-cicd-backend:latest
+          docker push ${{secrets.DOCKERHUB_USERNAME}}/go-react-crud-cicd-backend:v2
