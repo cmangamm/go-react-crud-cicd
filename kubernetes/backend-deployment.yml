@@ -47,3 +47,10 @@ spec:
           limits:
             cpu: "500m"
             memory: "256Mi"
+        volumeMounts:
+        - name: my-pv-storage
+          mountPath: /app/data
+      volumes:
+      - name: my-pv-storage
+        persistentVolumeClaim:
+          claimName: my-pvc
