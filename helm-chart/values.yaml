@@ -1,0 +1,23 @@
+backend:
+  replicas: 2
+  image: cmangamm/go-react-crud-backend:latest
+  port: 8000
+  service:
+    port: 8000
+    targetPort: 8000
+
+frontend:
+  replicas: 2
+  image: cmangamm/go-react-crud-frontend:latest
+  port: 80
+  service:
+    port: 80
+    targetPort: 80
+
+postgres:
+  replicas: 2
+  image: postgres:16
+  port: 5432
+  service:
+    port: 5432
+    targetPort: 5432
