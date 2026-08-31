@@ -1,6 +1,6 @@
 backend:
   replicas: 2
-  image: cmangamm/go-react-crud-backend:latest
+  image: cmangamm/go-react-crud-cicd-backend:latest
   port: 8000
   service:
     port: 8000
@@ -8,7 +8,7 @@ backend:
 
 frontend:
   replicas: 2
-  image: cmangamm/go-react-crud-frontend:latest
+  image: cmangamm/go-react-crud-cicd-frontend:latest
   port: 80
   service:
     port: 80
