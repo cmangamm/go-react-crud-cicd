@@ -1,20 +1,65 @@
 package main
 
 import (
-"database/sql"
-"encoding/json"
-"log"
-"net/http"
-"os"
+	"database/sql"
+	"encoding/json"
+	"log"
+	"net/http"
+	"os"
+	"time"
 
-"github.com/gorilla/mux"
-_ "github.com/lib/pq"
+	"github.com/gorilla/mux"
+	_ "github.com/lib/pq"
 )
 
 type User struct {
 	ID    int    `json:"id"`
 	Name  string `json:"name"`
 	Email string `json:"email"`
+}
+
+// responseWriter captures the HTTP status code.
+type responseWriter struct {
+	http.ResponseWriter
+	statusCode int
+}
+
+func (rw *responseWriter) WriteHeader(code int) {
+	rw.statusCode = code
+	rw.ResponseWriter.WriteHeader(code)
+}
+
+func (rw *responseWriter) Write(body []byte) (int, error) {
+	if rw.statusCode == 0 {
+		rw.statusCode = http.StatusOK
+	}
+	return rw.ResponseWriter.Write(body)
+}
+
+// loggingMiddleware logs every HTTP request.
+func loggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+
+		rw := &responseWriter{
+			ResponseWriter: w,
+		}
+
+		next.ServeHTTP(rw, r)
+
+		if rw.statusCode == 0 {
+			rw.statusCode = http.StatusOK
+		}
+
+		log.Printf(
+			"method=%s path=%s status=%d remote=%s duration=%s",
+			r.Method,
+			r.URL.Path,
+			rw.statusCode,
+			r.RemoteAddr,
+			time.Since(start),
+		)
+	})
 }
 
 func main() {
@@ -31,7 +76,9 @@ func main() {
 	}()
 
 	// Create the table if it doesn't exist
-	_, err = db.Exec("CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, name TEXT, email TEXT)")
+	_, err = db.Exec(
+		"CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, name TEXT, email TEXT)",
+	)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -43,7 +90,10 @@ func main() {
 	router.Use(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
-			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE")
+			w.Header().Set(
+				"Access-Control-Allow-Methods",
+				"GET, POST, PUT, DELETE",
+			)
 			w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
 			next.ServeHTTP(w, r)
@@ -52,33 +102,55 @@ func main() {
 
 	router.Methods("OPTIONS").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE")
+		w.Header().Set(
+			"Access-Control-Allow-Methods",
+			"GET, POST, PUT, DELETE",
+		)
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 		w.WriteHeader(http.StatusOK)
 	})
 
 	router.HandleFunc("/users", getUsers(db)).Methods("GET")
+
 	// Health endpoint
 	router.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-    	w.WriteHeader(http.StatusOK)
-		if _, err := w.Write([]byte("OK")); err != nil{
+		w.WriteHeader(http.StatusOK)
+
+		if _, err := w.Write([]byte("OK")); err != nil {
 			log.Println("failed to write health response:", err)
 		}
 	})
+
 	// Ready endpoint
 	router.HandleFunc("/ready", func(w http.ResponseWriter, r *http.Request) {
-    	w.WriteHeader(http.StatusOK)
-		if _, err := w.Write([]byte("READY")); err != nil{
+		w.WriteHeader(http.StatusOK)
+
+		if _, err := w.Write([]byte("READY")); err != nil {
 			log.Println("failed to write ready response:", err)
 		}
 	})
+
 	router.HandleFunc("/users/{id}", getUser(db)).Methods("GET")
 	router.HandleFunc("/users", createUser(db)).Methods("POST")
 	router.HandleFunc("/users/{id}", updateUser(db)).Methods("PUT")
 	router.HandleFunc("/users/{id}", deleteUser(db)).Methods("DELETE")
 
+	// Middleware order:
+	// Request
+	//   ↓
+	// Logging middleware
+	//   ↓
+	// JSON content type middleware
+	//   ↓
+	// Router / Handler
+	handler := loggingMiddleware(
+		jsonContentTypeMiddleware(router),
+	)
+
 	// Start server
-	log.Fatal(http.ListenAndServe(":8000", jsonContentTypeMiddleware(router)))
+	log.Println("Backend server starting on port 8000")
+
+	log.Fatal(http.ListenAndServe(":8000", handler))
 }
 
 func jsonContentTypeMiddleware(next http.Handler) http.Handler {
@@ -91,6 +163,7 @@ func jsonContentTypeMiddleware(next http.Handler) http.Handler {
 // Get all users
 func getUsers(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
 		rows, err := db.Query("SELECT * FROM users")
 		if err != nil {
 			log.Printf("Error querying users: %v", err)
@@ -111,7 +184,11 @@ func getUsers(db *sql.DB) http.HandlerFunc {
 
 			if err := rows.Scan(&u.ID, &u.Name, &u.Email); err != nil {
 				log.Printf("Error scanning user: %v", err)
-				http.Error(w, "Internal server error", http.StatusInternalServerError)
+				http.Error(
+					w,
+					"Internal server error",
+					http.StatusInternalServerError,
+				)
 				return
 			}
 
@@ -120,7 +197,11 @@ func getUsers(db *sql.DB) http.HandlerFunc {
 
 		if err := rows.Err(); err != nil {
 			log.Printf("Error iterating over users: %v", err)
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			http.Error(
+				w,
+				"Internal server error",
+				http.StatusInternalServerError,
+			)
 			return
 		}
 
@@ -133,14 +214,15 @@ func getUsers(db *sql.DB) http.HandlerFunc {
 // Get user by ID
 func getUser(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
 		vars := mux.Vars(r)
 		id := vars["id"]
 
 		var u User
 
 		err := db.QueryRow(
-		"SELECT * FROM users WHERE id = $1",
-		id,
+			"SELECT * FROM users WHERE id = $1",
+			id,
 		).Scan(&u.ID, &u.Name, &u.Email)
 
 		if err != nil {
@@ -157,22 +239,31 @@ func getUser(db *sql.DB) http.HandlerFunc {
 // Create user
 func createUser(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
 		var u User
 
 		if err := json.NewDecoder(r.Body).Decode(&u); err != nil {
-			http.Error(w, "Invalid request body", http.StatusBadRequest)
+			http.Error(
+				w,
+				"Invalid request body",
+				http.StatusBadRequest,
+			)
 			return
 		}
 
 		err := db.QueryRow(
-		"INSERT INTO users (name, email) VALUES ($1, $2) RETURNING id",
-		u.Name,
-		u.Email,
+			"INSERT INTO users (name, email) VALUES ($1, $2) RETURNING id",
+			u.Name,
+			u.Email,
 		).Scan(&u.ID)
 
 		if err != nil {
 			log.Printf("Error creating user: %v", err)
-			http.Error(w, "Error creating user", http.StatusInternalServerError)
+			http.Error(
+				w,
+				"Error creating user",
+				http.StatusInternalServerError,
+			)
 			return
 		}
 
@@ -185,10 +276,15 @@ func createUser(db *sql.DB) http.HandlerFunc {
 // Update user
 func updateUser(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
 		var u User
 
 		if err := json.NewDecoder(r.Body).Decode(&u); err != nil {
-			http.Error(w, "Invalid request body", http.StatusBadRequest)
+			http.Error(
+				w,
+				"Invalid request body",
+				http.StatusBadRequest,
+			)
 			return
 		}
 
@@ -196,15 +292,19 @@ func updateUser(db *sql.DB) http.HandlerFunc {
 		id := vars["id"]
 
 		_, err := db.Exec(
-		"UPDATE users SET name = $1, email = $2 WHERE id = $3",
-		u.Name,
-		u.Email,
-		id,
+			"UPDATE users SET name = $1, email = $2 WHERE id = $3",
+			u.Name,
+			u.Email,
+			id,
 		)
 
 		if err != nil {
 			log.Printf("Error updating user: %v", err)
-			http.Error(w, "Error updating user", http.StatusInternalServerError)
+			http.Error(
+				w,
+				"Error updating user",
+				http.StatusInternalServerError,
+			)
 			return
 		}
 
@@ -217,6 +317,7 @@ func updateUser(db *sql.DB) http.HandlerFunc {
 // Delete user
 func deleteUser(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
 		vars := mux.Vars(r)
 		id := vars["id"]
 
@@ -224,16 +325,17 @@ func deleteUser(db *sql.DB) http.HandlerFunc {
 		var u User
 
 		err := db.QueryRow(
-		"SELECT * FROM users WHERE id = $1",
-		id,
+			"SELECT * FROM users WHERE id = $1",
+			id,
 		).Scan(&u.ID, &u.Name, &u.Email)
 
 		if err != nil {
+
 			if err == sql.ErrNoRows {
 				w.WriteHeader(http.StatusNotFound)
 
 				if err := json.NewEncoder(w).Encode(
-				map[string]string{"error": "User not found"},
+					map[string]string{"error": "User not found"},
 				); err != nil {
 					log.Printf("Error encoding response: %v", err)
 				}
@@ -244,7 +346,7 @@ func deleteUser(db *sql.DB) http.HandlerFunc {
 			w.WriteHeader(http.StatusInternalServerError)
 
 			if err := json.NewEncoder(w).Encode(
-			map[string]string{"error": "Internal server error"},
+				map[string]string{"error": "Internal server error"},
 			); err != nil {
 				log.Printf("Error encoding response: %v", err)
 			}
@@ -253,13 +355,16 @@ func deleteUser(db *sql.DB) http.HandlerFunc {
 		}
 
 		// User found, delete
-		_, err = db.Exec("DELETE FROM users WHERE id = $1", id)
+		_, err = db.Exec(
+			"DELETE FROM users WHERE id = $1",
+			id,
+		)
 
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 
 			if err := json.NewEncoder(w).Encode(
-			map[string]string{"error": "Error deleting user"},
+				map[string]string{"error": "Error deleting user"},
 			); err != nil {
 				log.Printf("Error encoding response: %v", err)
 			}
@@ -271,7 +376,7 @@ func deleteUser(db *sql.DB) http.HandlerFunc {
 		w.WriteHeader(http.StatusOK)
 
 		if err := json.NewEncoder(w).Encode(
-		map[string]string{"message": "User deleted successfully"},
+			map[string]string{"message": "User deleted successfully"},
 		); err != nil {
 			log.Printf("Error encoding response: %v", err)
 		}
