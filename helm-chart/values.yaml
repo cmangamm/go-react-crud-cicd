@@ -1,5 +1,5 @@
 backend:
-  replicas: 2
+  replicas: 1
   image: cmangamm/go-react-crud-cicd-backend:latest
   port: 8000
   service:
@@ -7,7 +7,7 @@ backend:
     targetPort: 8000
 
 frontend:
-  replicas: 2
+  replicas: 1
   image: cmangamm/go-react-crud-cicd-frontend:latest
   port: 80
   service:
@@ -15,7 +15,7 @@ frontend:
     targetPort: 80
 
 postgres:
-  replicas: 2
+  replicas: 1
   image: postgres:16
   port: 5432
   service:
